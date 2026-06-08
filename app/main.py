@@ -50,16 +50,16 @@ def get_latest_shipment():
     return shipments[id]
 
 
-@app.get("/shipment/{id}")
-def get_shipment(id: int) -> dict[str, Any]:
+# @app.get("/shipment/{id}")
+# def get_shipment(id: int) -> dict[str, Any]:
 
-    if id not in shipments:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Given id does not exist!!"
-        )
+#     if id not in shipments:
+#         raise HTTPException(
+#             status_code=status.HTTP_404_NOT_FOUND,
+#             detail="Given id does not exist!!"
+#         )
 
-    return shipments[id]
+#     return shipments[id]
 
 
 @app.post("/shipment")
@@ -83,6 +83,12 @@ def submit_shipment(data: dict[str, Any]) -> dict[str, Any]:
 
     return {"id": new_id}
 
+
+@app.get("/shipment/{field}")
+def get_shipment_field(field: str, id: int) -> dict[str, Any]:
+    return {
+        field: shipments[id][field]
+    }
 
 @app.get("/scalar")
 def get_scalar_docs():
