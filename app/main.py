@@ -1,20 +1,54 @@
-from enum import Enum
 from typing import Any
 
 from fastapi import FastAPI, HTTPException, status
 from scalar_fastapi import get_scalar_api_reference
-from .schemas import shipment
+from .schemas import Shipment, ShipmentStatus
 
 app = FastAPI()
 
 shipments = {
-    1234: {"weight": 0.9, "content": "Glass door", "status": "Placed"},
-    1235: {"weight": 1.2, "content": "Wooden chair", "status": "In transit"},
-    1236: {"weight": 2.5, "content": "Metal desk", "status": "Delivered"},
-    1237: {"weight": 0.5, "content": "Plastic box", "status": "Placed"},
-    1238: {"weight": 3.0, "content": "Bookshelf", "status": "In transit"},
-    1239: {"weight": 1.5, "content": "Lamp", "status": "Delivered"},
-    1240: {"weight": 2.0, "content": "Cabinet", "status": "Placed"},
+    1234: {
+        "weight": 0.9,
+        "content": "Glass door",
+        "status": "placed",
+        "destination": 10001,
+    },
+    1235: {
+        "weight": 1.2,
+        "content": "Wooden chair",
+        "status": "in transit",
+        "destination": 10002,
+    },
+    1236: {
+        "weight": 2.5,
+        "content": "Metal desk",
+        "status": "delivered",
+        "destination": 10003,
+    },
+    1237: {
+        "weight": 0.5,
+        "content": "Plastic box",
+        "status": "placed",
+        "destination": 10004,
+    },
+    1238: {
+        "weight": 3.0,
+        "content": "Bookshelf",
+        "status": "in transit",
+        "destination": 10005,
+    },
+    1239: {
+        "weight": 1.5,
+        "content": "Lamp",
+        "status": "delivered",
+        "destination": 10006,
+    },
+    1240: {
+        "weight": 2.0,
+        "content": "Cabinet",
+        "status": "placed",
+        "destination": 10007,
+    },
 }
 
 
@@ -24,8 +58,8 @@ def get_latest_shipment():
     return shipments[id]
 
 
-@app.get("/shipment")
-def get_shipment(id: int) -> dict[str, Any]:
+@app.get("/shipment", response_model=Shipment)
+def get_shipment(id: int):
 
     if id not in shipments:
         raise HTTPException(
@@ -36,7 +70,7 @@ def get_shipment(id: int) -> dict[str, Any]:
 
 
 @app.post("/shipment")
-def submit_shipment(shipment: shipment) -> dict[str, Any]:
+def submit_shipment(shipment: Shipment) -> dict[str, Any]:
     if shipment.weight > 25:
         raise HTTPException(
             status_code=status.HTTP_406_NOT_ACCEPTABLE,
@@ -73,13 +107,6 @@ def shipment_update(
     }
 
     return shipments[id]
-
-
-class ShipmentStatus(str, Enum):
-    placed = "placed"
-    in_transit = "in_transit"
-    out_for_delivery = "out_for_delivery"
-    delivered = "delivered"
 
 
 @app.patch("/shipment")
