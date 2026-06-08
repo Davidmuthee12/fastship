@@ -2,14 +2,7 @@ from typing import Any
 
 from fastapi import FastAPI, HTTPException, status
 from scalar_fastapi import get_scalar_api_reference
-from pydantic import BaseModel
-
-
-class shipment(BaseModel):
-    content: str
-    weight: float
-    destination: int
-
+from .schemas import shipment
 
 app = FastAPI()
 
@@ -30,7 +23,7 @@ def get_latest_shipment():
     return shipments[id]
 
 
-@app.get("/shipment/{id}")
+@app.get("/shipment")
 def get_shipment(id: int) -> dict[str, Any]:
 
     if id not in shipments:
