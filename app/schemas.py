@@ -4,10 +4,6 @@ from enum import Enum
 from pydantic import BaseModel, Field
 
 
-def random_destination():
-    randint(11000, 11999)
-
-
 class ShipmentStatus(str, Enum):
     placed = "placed"
     in_transit = "in_transit"
@@ -15,8 +11,19 @@ class ShipmentStatus(str, Enum):
     delivered = "delivered"
 
 
-class Shipment(BaseModel):
+class BaseShipment(BaseModel):
     content: str
     weight: float = Field(le=25)
     destination: int
+
+
+class ShipmentRead(BaseShipment):
+    status: ShipmentStatus
+
+
+class ShipmentCreate(BaseShipment):
+    pass
+
+
+class ShipmentUpdate(BaseModel):
     status: ShipmentStatus

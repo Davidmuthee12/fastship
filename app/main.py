@@ -2,7 +2,11 @@ from typing import Any
 
 from fastapi import FastAPI, HTTPException, status
 from scalar_fastapi import get_scalar_api_reference
-from .schemas import Shipment, ShipmentStatus
+from .schemas import (
+    ShipmentCreate,
+    ShipmentRead,
+    ShipmentUpdate,
+)
 
 app = FastAPI()
 
@@ -58,7 +62,7 @@ def get_latest_shipment():
     return shipments[id]
 
 
-@app.get("/shipment", response_model=Shipment)
+@app.get("/shipment", response_model=ShipmentRead)
 def get_shipment(id: int):
 
     if id not in shipments:
@@ -70,7 +74,7 @@ def get_shipment(id: int):
 
 
 @app.post("/shipment")
-def submit_shipment(shipment: Shipment) -> dict[str, Any]:
+def submit_shipment(shipment: ShipmentCreate) -> dict[str, Any]:
     if shipment.weight > 25:
         raise HTTPException(
             status_code=status.HTTP_406_NOT_ACCEPTABLE,
@@ -82,7 +86,8 @@ def submit_shipment(shipment: Shipment) -> dict[str, Any]:
     shipments[new_id] = {
         "content": shipment.content,
         "weight": shipment.weight,
-        "status": "pending",
+        "destination": shipment.destination,
+        "status": "placed",
     }
 
     return {"id": new_id}
@@ -109,15 +114,13 @@ def shipment_update(
     return shipments[id]
 
 
-@app.patch("/shipment")
-def patch_shipment(
+@app.patch("/shipment", response_model=ShipmentRead)
+def update_shipment(
     id: int,
-    body: dict[str, ShipmentStatus],
+    body: ShipmentUpdate,
 ):
     shipment = shipments[id]
     shipment.update(body)
-
-    shipments[id] = shipment
     return shipment
 
 
