@@ -1,6 +1,7 @@
-from fastapi import FastAPI
-from scalar_fastapi import get_scalar_api_reference
 from typing import Any
+
+from fastapi import FastAPI, HTTPException, status
+from scalar_fastapi import get_scalar_api_reference
 
 
 app = FastAPI()
@@ -53,10 +54,32 @@ def get_latest_shipment():
 def get_shipment(id: int) -> dict[str, Any]:
 
     if id not in shipments:
-        return {"detail": "Given id is not in shipments"}
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Given id does not exist!!"
+        )
 
     return shipments[id]
 
+
+@app.post("/shipment")
+def submit_shipment(content: str, weight: float) -> dict[str, int]:
+
+    if weight > 25:
+        raise HTTPException(
+            status_code=status.HTTP_406_NOT_ACCEPTABLE,
+            detail="Maximum Weight limit is 25 kgs"
+        )
+
+    new_id = max(shipments.keys()) + 1
+
+    shipments[new_id] = {
+        "content": content,
+        "weight": weight,
+        "status": "pending",
+    }
+
+    return {"id": new_id}
 
 
 @app.get("/scalar")
