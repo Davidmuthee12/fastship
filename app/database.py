@@ -41,10 +41,16 @@ cursor.execute("""
 # connection.commit()
 
 # 5. Update a shipment
-cursor.execute("""
-    UPDATE shipment SET status = 'in_transit'
-    WHERE id = 1241
-""")
+id = 1241
+status = "placed"
+
+cursor.execute(
+    """
+    UPDATE shipment SET status = ?
+    WHERE id = ?
+""",
+    (status, id),
+)
 connection.commit()
 
 # close the connection when done
