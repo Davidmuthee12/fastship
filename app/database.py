@@ -18,9 +18,18 @@ cursor.execute("""
 # 2. Add shipment data
 cursor.execute("""
     INSERT INTO shipment
-    VALUES (1242, 'Rose Flowers', 18.5, 'in_transit')
+    VALUES (1243, 'Missile', 18.5, 'placed')
 """)
 connection.commit()
+
+# 3. Read a shipment by id
+cursor.execute("""
+    SELECT * FROM shipment
+    WHERE id = 1241
+""")
+result = cursor.fetchall()
+print(result)
+
 
 # close the connection when done
 connection.close()
