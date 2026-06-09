@@ -7,53 +7,54 @@ from .schemas import (
     ShipmentRead,
     ShipmentUpdate,
 )
+from .database import shipments, save
 
 app = FastAPI()
 
-shipments = {
-    1234: {
-        "weight": 0.9,
-        "content": "Glass door",
-        "status": "placed",
-        "destination": 10001,
-    },
-    1235: {
-        "weight": 1.2,
-        "content": "Wooden chair",
-        "status": "in transit",
-        "destination": 10002,
-    },
-    1236: {
-        "weight": 2.5,
-        "content": "Metal desk",
-        "status": "delivered",
-        "destination": 10003,
-    },
-    1237: {
-        "weight": 0.5,
-        "content": "Plastic box",
-        "status": "placed",
-        "destination": 10004,
-    },
-    1238: {
-        "weight": 3.0,
-        "content": "Bookshelf",
-        "status": "in transit",
-        "destination": 10005,
-    },
-    1239: {
-        "weight": 1.5,
-        "content": "Lamp",
-        "status": "delivered",
-        "destination": 10006,
-    },
-    1240: {
-        "weight": 2.0,
-        "content": "Cabinet",
-        "status": "placed",
-        "destination": 10007,
-    },
-}
+# shipments = {
+#     1234: {
+#         "weight": 0.9,
+#         "content": "Glass door",
+#         "status": "placed",
+#         "destination": 10001,
+#     },
+#     1235: {
+#         "weight": 1.2,
+#         "content": "Wooden chair",
+#         "status": "in transit",
+#         "destination": 10002,
+#     },
+#     1236: {
+#         "weight": 2.5,
+#         "content": "Metal desk",
+#         "status": "delivered",
+#         "destination": 10003,
+#     },
+#     1237: {
+#         "weight": 0.5,
+#         "content": "Plastic box",
+#         "status": "placed",
+#         "destination": 10004,
+#     },
+#     1238: {
+#         "weight": 3.0,
+#         "content": "Bookshelf",
+#         "status": "in transit",
+#         "destination": 10005,
+#     },
+#     1239: {
+#         "weight": 1.5,
+#         "content": "Lamp",
+#         "status": "delivered",
+#         "destination": 10006,
+#     },
+#     1240: {
+#         "weight": 2.0,
+#         "content": "Cabinet",
+#         "status": "placed",
+#         "destination": 10007,
+#     },
+# }
 
 
 @app.get("/shipment/latest")
@@ -84,11 +85,12 @@ def submit_shipment(shipment: ShipmentCreate) -> dict[str, Any]:
     new_id = max(shipments.keys()) + 1
 
     shipments[new_id] = {
-        "content": shipment.content,
-        "weight": shipment.weight,
-        "destination": shipment.destination,
+        **shipment.model_dump(),
+        "id": new_id,
         "status": "placed",
     }
+
+    save()
 
     return {"id": new_id}
 
@@ -120,7 +122,8 @@ def update_shipment(
     body: ShipmentUpdate,
 ):
     shipment = shipments[id]
-    shipment.update(body)
+    shipment.update(body.model_dump(exclude_none=True))
+    save()
     return shipment
 
 
