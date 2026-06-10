@@ -8,10 +8,18 @@ from .schemas import (
     ShipmentUpdate,
 )
 from .database import Database
+from app.database.session import create_db_tables
+from contextlib import asynccontextmanager
 
+
+@asynccontextmanager
+async def lifespan_handler(app: FastAPI):
+    create_db_tables()
+    yield
+
+
+app = FastAPI(lifespan=lifespan_handler)
 db = Database()
-
-app = FastAPI()
 
 
 @app.get("/shipment", response_model=ShipmentRead)
