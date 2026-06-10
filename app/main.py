@@ -1,6 +1,7 @@
 from typing import Any
 
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, status, Depends
+from app.database.models import Shipment
 from scalar_fastapi import get_scalar_api_reference
 from .schemas import (
     ShipmentCreate,
@@ -8,8 +9,9 @@ from .schemas import (
     ShipmentUpdate,
 )
 from .database import Database
-from app.database.session import create_db_tables
+from app.database.session import create_db_tables, get_session
 from contextlib import asynccontextmanager
+from sqlmodel import Session
 
 
 @asynccontextmanager
@@ -23,9 +25,10 @@ db = Database()
 
 
 @app.get("/shipment", response_model=ShipmentRead)
-def get_shipment(id: int):
+def get_shipment(id: int, session: Session = Depends(get_session)):
+    session
     # check for shipment with given id
-    shipment = db.get(id)
+    shipment = session.get(Shipment, id)
 
     if shipment is None:
         raise HTTPException(
@@ -36,7 +39,9 @@ def get_shipment(id: int):
 
 
 @app.post("/shipment")
-def submit_shipment(shipment: ShipmentCreate) -> dict[str, Any]:
+def submit_shipment(
+    shipment: ShipmentCreate, session: Session = Depends(get_session)
+) -> dict[str, Any]:
     new_id = db.create(shipment)
 
     return {"id": new_id}
