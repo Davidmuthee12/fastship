@@ -5,8 +5,8 @@ class DatabaseSettings(BaseSettings):
     POSTGRES_SERVER: str
     POSTGRES_PORT: int
     POSTGRES_USER: str
-    POSTGRES_DB: str
     POSTGRES_PASSWORD: str
+    POSTGRES_DB: str
 
     model_config = SettingsConfigDict(
         env_file="./.env",
@@ -20,4 +20,3 @@ class DatabaseSettings(BaseSettings):
 
 
 settings = DatabaseSettings()
-settings.POSTGRES_URL
