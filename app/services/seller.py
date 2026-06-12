@@ -1,8 +1,13 @@
+from datetime import datetime, timedelta
+
+import jwt
+from fastapi import HTTPException, status
 from passlib.context import CryptContext
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import HTTPException, status
+
 from app.api.schemas.seller import SellerCreate
+from app.config import security_settings
 from app.database.models import Seller
 
 password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -28,11 +33,11 @@ class SellerService:
     async def token(self, email, password) -> str:
         # validate the credentials
         result = await self.session.execute(
-            select(Seller).Where(Seller.email == email),
+            select(Seller).where(Seller.email == email),
         )
         seller = result.scalar()
 
-        if seller is None or password_context.verify(
+        if seller is None or not password_context.verify(
             password,
             seller.password_hash,
         ):
@@ -41,4 +46,16 @@ class SellerService:
                 detail="Email or password is incorrect",
             )
 
-        seller  # verified
+        token = jwt.encode(
+            payload={
+                "user": {
+                    "name": seller.name,
+                    "email": seller.email,
+                },
+                "exp": datetime.now() + timedelta(days=1),
+            },
+            algorithm=security_settings.JWT_ALGORITHM,
+            key=security_settings.JWT_SECRET,
+        )
+
+        return token
