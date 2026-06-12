@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.session import get_session
 from app.services.shipment import ShipmentService
+from app.services.seller import SellerService
 
 
 # Asynchronous database session dep annotation
@@ -15,6 +16,17 @@ SessionDep = Annotated[AsyncSession, Depends(get_session)]
 def get_shipment_service(session: SessionDep):
     return ShipmentService(session)
 
+
+# Seller service dep
+def get_seller_service(session: SessionDep):
+    return SellerService(session)
+
+
+# Seller service dep annotation
+SellerServiceDep = Annotated[
+    SellerService,
+    Depends(get_seller_service),
+]
 
 # Shipment service dep annotation
 ServiceDep = Annotated[
