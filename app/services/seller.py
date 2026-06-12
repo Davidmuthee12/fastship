@@ -32,8 +32,13 @@ class SellerService:
         )
         seller = result.scalar()
 
-        if seller is None:
+        if seller is None or password_context.verify(
+            password,
+            seller.password_hash,
+        ):
             raise HTTPException(
                 status=status.HTTP_404_NOT_FOUND,
-                detail="seller with given email is not found",
+                detail="Email or password is incorrect",
             )
+
+        seller  # verified
