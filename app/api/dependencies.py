@@ -2,6 +2,7 @@ from typing import Annotated
 from uuid import UUID
 
 from fastapi import Depends, HTTPException, status
+from app.services.shipment_event import ShipmentEventService
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import oauth2_scheme_seller, oauth2_scheme_partner
@@ -89,6 +90,7 @@ def get_shipment_service(session: SessionDep):
     return ShipmentService(
         session,
         DeliveryPartnerService(session),
+        ShipmentEventService(session),
     )
 
 
