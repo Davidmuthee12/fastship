@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, BackgroundTasks
+from app.services.notification import NotificationService
 from scalar_fastapi import get_scalar_api_reference
 
 from app.api.router import master_router
@@ -20,6 +21,19 @@ app = FastAPI(
 
 
 app.include_router(master_router)
+
+
+@app.get("/mail")
+async def send_test_mail(tasks: BackgroundTasks):
+
+    tasks.add_task(
+        NotificationService(tasks).send_email,
+        recipients=["pyzegv@mailto.plus"],
+        subject="Test mail coming through once",
+        body="Hello this is vladmir. I eat fluffy dolls and terdy bears for funn. hwahwha😂😂😒",
+    )
+
+    return {"detail": "Sending mail..."}
 
 
 ### Scalar API Documentation
