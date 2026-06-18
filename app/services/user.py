@@ -1,7 +1,13 @@
+from uuid import UUID
+
 from fastapi import HTTPException, status, BackgroundTasks
 from passlib.context import CryptContext
-from app.utils import generate_access_token, generate_url_safe_token
-from learn_python.app.services.notification import NotificationService
+from app.utils import (
+    decode_url_safe_token,
+    generate_access_token,
+    generate_url_safe_token,
+)
+from app.services.notification import NotificationService
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -19,7 +25,7 @@ class UserService(BaseService):
         self.session = session
         self.notification_service = NotificationService(tasks)
 
-    async def _add_user(self, data: dict):
+    async def _add_user(self, data: dict, router_prefix: str):
         user = self.model(
             **data,
             password_hash=password_context.hash(data["password"]),
@@ -29,21 +35,35 @@ class UserService(BaseService):
         token = generate_url_safe_token(
             {
                 "email": user.email,
-                "id": user.id,
+                "id": str(user.id),
             }
         )
 
-        self.notification_service.send_email_with_template(
+        await self.notification_service.send_email_with_template(
             recipients=[user.email],
             subject="Verify Your Account with FastShip",
             context={
                 "username": user.name,
-                "verification_url": f"http://{app_settings.APP_DOMAIN}/user/verify?token={token}",
+                "verification_url": f"http://{app_settings.APP_DOMAIN}/{router_prefix}/verify?token={token}",
             },
             template_name="mail_email_verify.html",
         )
 
         return user
+
+    async def verify_email(self, token: str):
+        token_data = decode_url_safe_token(token)
+
+        if not token_data:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                details="Invalid token",
+            )
+
+        user = await self._get(UUID(token_data["id"]))
+        user.email_verified = True
+
+        await self._update(user)
 
     async def _get_by_email(self, email) -> User | None:
         return await self.session.scalar(

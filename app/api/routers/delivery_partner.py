@@ -62,6 +62,13 @@ async def update_delivery_partner(
     )
 
 
+### Verify delivery partner Email
+@router.get("/verify")
+async def verify_delivery_partner_email(token: str, service: DeliveryPartnerDep):
+    service.verify_email(token)
+    return {"detail": "Account verified"}
+
+
 ### Logout a delivery partner
 @router.get("/logout")
 async def logout_delivery_partner(

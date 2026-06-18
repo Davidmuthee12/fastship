@@ -14,7 +14,10 @@ class DeliveryPartnerService(UserService):
         super().__init__(DeliveryPartner, session, tasks)
 
     async def add(self, delivery_partner: DeliveryPartnerCreate):
-        return await self._add_user(delivery_partner.model_dump())
+        return await self._add_user(
+            delivery_partner.model_dump(),
+            "partner",
+        )
 
     async def get_partner_by_zipcode(self, zipcode: int) -> Sequence[DeliveryPartner]:
         return (
