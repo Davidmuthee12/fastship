@@ -1,9 +1,10 @@
 from uuid import UUID
+
 from fastapi import APIRouter, HTTPException, status
+from fastapi.responses import HTMLResponse
 
 from ..dependencies import DeliveryPartnerDep, SellerDep, ShipmentServiceDep
 from ..schemas.shipment import ShipmentCreate, ShipmentRead, ShipmentUpdate
-
 
 router = APIRouter(prefix="/shipment", tags=["Shipment"])
 
@@ -21,6 +22,17 @@ async def get_shipment(id: UUID, service: ShipmentServiceDep):
         )
 
     return shipment
+
+
+### Tracking details for a shipment
+@router.get("/track")
+async def get_tracking(id: UUID, service: ShipmentServiceDep):
+    # check for shipment with given id
+    shipment = await service.get(id)
+
+    return HTMLResponse(
+        content=f"<body> <h1>Order #{shipment.id}:{shipment.status} </h1> </body>"
+    )
 
 
 ### Create a new shipment
