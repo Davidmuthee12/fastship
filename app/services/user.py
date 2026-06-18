@@ -97,3 +97,21 @@ class UserService(BaseService):
                 }
             }
         )
+
+    async def send_password_reset_link(self, email, router_prefix):
+        user = self._get_by_email(email)
+
+        token = generate_url_safe_token(
+            {"id": user.id},
+            salt="password-reset",
+        )
+
+        await self.notification_service.send_email_with_template(
+            recipients=[user.email],
+            subject="Fastship Account Password",
+            context={
+                "username": user.name,
+                "reset_url": f"http://{app_settings.APP_DOMAIN}/{router_prefix}/reset_password?token={token}",
+            },
+            template_name="mail_password_reset.html",
+        )
