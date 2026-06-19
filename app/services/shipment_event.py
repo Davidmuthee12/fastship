@@ -1,9 +1,9 @@
 from random import randint
-
+from fastapi import HTTPException, status as http_status
 from app.database.models import Shipment, ShipmentEvent, ShipmentStatus
+from app.database.redis import add_shipment_verification_code
 from app.services.base import BaseService
 from app.services.notification import NotificationService
-from learn_python.app.database.redis import add_shipment_verification_code
 
 
 class ShipmentEventService(BaseService):
@@ -14,15 +14,21 @@ class ShipmentEventService(BaseService):
     async def add(
         self,
         shipment: Shipment,
-        location: int = None,
-        status: ShipmentStatus = None,
-        description: str = None,
+        location: int | None = None,
+        status: ShipmentStatus | None = None,
+        description: str | None = None,
     ) -> ShipmentEvent:
-        if not location or not status:
+        if location is None or status is None:
             last_event = await self.get_latest_event(shipment)
 
-            location = location if location else last_event.location
-            status = status if status else last_event.status
+            if last_event is None:
+                raise HTTPException(
+                    status_code=http_status.HTTP_400_BAD_REQUEST,
+                    detail="Location and status are required for the first shipment event",
+                )
+
+            location = location if location is not None else last_event.location
+            status = status if status is not None else last_event.status
 
         new_event = ShipmentEvent(
             location=location,
@@ -42,8 +48,13 @@ class ShipmentEventService(BaseService):
 
     async def get_latest_event(self, shipment: Shipment):
         timeline = shipment.timeline
-        timeline.sort(key=lambda event: event.created_at)
-        return timeline[-1]
+        if not timeline:
+            return None
+
+        return max(
+            timeline,
+            key=lambda event: event.created_at,
+        )
 
     def _generate_description(self, status: ShipmentStatus, location: int):
         match status:
@@ -69,7 +80,7 @@ class ShipmentEventService(BaseService):
 
         match status:
             case ShipmentStatus.placed:
-                subject = "Your Order is Shipped 🚛"
+                subject = "Your Order is Placed 🚛"
                 context["id"] = shipment.id
                 context["seller"] = shipment.seller.name
                 context["partner"] = shipment.delivery_partner.name
@@ -80,15 +91,18 @@ class ShipmentEventService(BaseService):
                 template_name = "mail_out_for_delivery.html"
 
                 code = randint(100_000, 999_999)
-                add_shipment_verification_code(shipment.id, code)
+                await add_shipment_verification_code(shipment.id, code)
 
+                sms_sent = False
                 if shipment.client_contact_phone:
-                    await self.notification_service.send_sms(
+                    sms_sent = await self.notification_service.send_sms(
                         to=shipment.client_contact_phone,
-                        body=f"Your order is arriving soon! Share the {code} code with your"
+                        body=f"Your order is arriving soon! Share the {code} code with your "
                         "delivery executive to receive your package.",
                     )
-                else:
+
+                if not sms_sent:
+                    # Email the code when SMS is unavailable or rejected by Twilio.
                     context["verification_code"] = code
 
             case ShipmentStatus.delivered:
