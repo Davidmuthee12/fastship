@@ -6,7 +6,12 @@ from fastapi.templating import Jinja2Templates
 from app.utils import TEMPLATE_DIR
 
 from ..dependencies import DeliveryPartnerDep, SellerDep, ShipmentServiceDep
-from ..schemas.shipment import ShipmentCreate, ShipmentRead, ShipmentUpdate
+from ..schemas.shipment import (
+    ShipmentCreate,
+    ShipmentRead,
+    ShipmentReview,
+    ShipmentUpdate,
+)
 
 router = APIRouter(prefix="/shipment", tags=["Shipment"])
 
@@ -86,3 +91,14 @@ async def cancel_shipment(
     service: ShipmentServiceDep,
 ):
     return await service.cancel(id, seller)
+
+
+### Submit a review for a shipment
+@router.post("/review")
+async def submit_review(
+    token: str,
+    review: ShipmentReview,
+    service: ShipmentServiceDep,
+):
+    await service.rate(token, review)
+    return {"detail": "Review Submitted"}
