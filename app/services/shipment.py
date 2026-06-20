@@ -107,7 +107,7 @@ class ShipmentService(BaseService):
 
         return await self._update(shipment)
 
-    async def rate(self, token: str, review: ShipmentReview):
+    async def rate(self, token: str, rating: int, comment: str):
         token_data = decode_url_safe_token(token)
 
         if not token_data:
@@ -119,7 +119,8 @@ class ShipmentService(BaseService):
         shipment = await self.get(UUID(token_data["id"]))
 
         new_review = Review(
-            **review.model_dump(),
+            rating=rating,
+            comment=comment if comment else None,
             shipment_id=shipment.id,
         )
 

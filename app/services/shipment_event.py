@@ -5,7 +5,7 @@ from app.database.redis import add_shipment_verification_code
 from app.services.base import BaseService
 from app.services.notification import NotificationService
 from app.config import app_settings
-from learn_python.app.utils import generate_url_safe_token
+from app.utils import generate_url_safe_token
 
 
 class ShipmentEventService(BaseService):
