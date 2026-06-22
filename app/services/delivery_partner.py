@@ -1,9 +1,9 @@
 from typing import Sequence
 
-from fastapi import HTTPException, status
 from sqlmodel import select, any_
 
 from app.api.schemas.delivery_partner import DeliveryPartnerCreate
+from app.core.exceptions import DeliveryPartnerNotAvailable
 from app.database.models import DeliveryPartner, Shipment
 
 from .user import UserService
@@ -38,10 +38,7 @@ class DeliveryPartnerService(UserService):
 
         # If no eliglible partners found or
         # parters have reached max handling capacity
-        raise HTTPException(
-            status_code=status.HTTP_406_NOT_ACCEPTABLE,
-            detail="No delivery partner available",
-        )
+        raise DeliveryPartnerNotAvailable()
 
     async def update(self, partner: DeliveryPartner):
         return await self._update(partner)

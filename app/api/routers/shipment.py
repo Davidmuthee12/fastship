@@ -1,9 +1,11 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, Request, status, Form
+from fastapi import APIRouter, Form, Request
 from fastapi.templating import Jinja2Templates
 
+from app.config import app_settings
+from app.core.exceptions import NothingToUpdate
 from app.database.models import TagName
 from app.utils import TEMPLATE_DIR
 
@@ -11,10 +13,8 @@ from ..dependencies import DeliveryPartnerDep, SellerDep, SessionDep, ShipmentSe
 from ..schemas.shipment import (
     ShipmentCreate,
     ShipmentRead,
-    ShipmentReview,
     ShipmentUpdate,
 )
-from app.config import app_settings
 
 router = APIRouter(prefix="/shipment", tags=["Shipment"])
 
@@ -45,15 +45,7 @@ async def get_tracking(request: Request, id: UUID, service: ShipmentServiceDep):
 @router.get("/", response_model=ShipmentRead)
 async def get_shipment(id: UUID, service: ShipmentServiceDep):
     # Check for shipment with given id
-    shipment = await service.get(id)
-
-    if shipment is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Given id doesn't exist!",
-        )
-
-    return shipment
+    return await service.get(id)
 
 
 ### Create a new shipment
@@ -78,10 +70,7 @@ async def update_shipment(
     update = shipment_update.model_dump(exclude_none=True)
 
     if not update:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="No data provided to update",
-        )
+        raise NothingToUpdate()
 
     return await service.update(id, shipment_update, partner)
 

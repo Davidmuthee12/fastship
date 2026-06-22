@@ -1,5 +1,6 @@
 from random import randint
 from fastapi import HTTPException, status as http_status
+from app.core.exceptions import EntityNotFound
 from app.database.models import Shipment, ShipmentEvent, ShipmentStatus
 from app.database.redis import add_shipment_verification_code
 from app.services.base import BaseService
@@ -23,10 +24,7 @@ class ShipmentEventService(BaseService):
             last_event = await self.get_latest_event(shipment)
 
             if last_event is None:
-                raise HTTPException(
-                    status_code=http_status.HTTP_400_BAD_REQUEST,
-                    detail="Location and status are required for the first shipment event",
-                )
+                raise EntityNotFound()
 
             location = location if location is not None else last_event.location
             status = status if status is not None else last_event.status

@@ -1,6 +1,8 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, BackgroundTasks
+from fastapi.responses import JSONResponse
+from app.core.exceptions import InvalidToken, add_exception_handlers
 from app.services.notification import NotificationService
 from scalar_fastapi import get_scalar_api_reference
 
@@ -14,13 +16,10 @@ async def lifespan_handler(app: FastAPI):
     yield
 
 
-app = FastAPI(
-    # Server start/stop listener
-    lifespan=lifespan_handler,
-)
-
-
+app = FastAPI()
 app.include_router(master_router)
+
+add_exception_handlers(app)
 
 
 @app.get("/mail")

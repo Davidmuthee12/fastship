@@ -1,7 +1,7 @@
 from datetime import timedelta
 from uuid import UUID
-from fastapi import HTTPException, status
 from passlib.context import CryptContext
+from app.core.exceptions import BadCredentials, ClientNotVerified, InvalidToken
 from app.worker.tasks import send_email_with_template
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -59,9 +59,7 @@ class UserService(BaseService):
         token_data = decode_url_safe_token(token)
         # Validate the token
         if not token_data:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid token"
-            )
+            raise InvalidToken()
         # Update the verified field on the user
         # to mark user as verified
         user = await self._get(UUID(token_data["id"]))
@@ -82,16 +80,10 @@ class UserService(BaseService):
             password,
             user.password_hash,
         ):
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Email or password is incorrect",
-            )
+            raise BadCredentials()
 
         if not user.email_verified:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Email not verified",
-            )
+            raise ClientNotVerified()
 
         return generate_access_token(
             data={
