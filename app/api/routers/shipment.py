@@ -4,6 +4,7 @@ from uuid import UUID
 from fastapi import APIRouter, HTTPException, Request, status, Form
 from fastapi.templating import Jinja2Templates
 
+from app.database.models import TagName
 from app.utils import TEMPLATE_DIR
 
 from ..dependencies import DeliveryPartnerDep, SellerDep, ShipmentServiceDep
@@ -83,6 +84,26 @@ async def update_shipment(
         )
 
     return await service.update(id, shipment_update, partner)
+
+
+### Add a tag to a shipment
+@router.get("/tag", response_model=ShipmentRead)
+async def add_tag_to_shipment(
+    id: UUID,
+    tag_name: TagName,
+    service: ShipmentServiceDep,
+):
+    return await service.add_tag(id, tag_name)
+
+
+### Remove a tag from a shipment
+@router.delete("/tag", response_model=ShipmentRead)
+async def remove_tag_from_shipment(
+    id: UUID,
+    tag_name: TagName,
+    service: ShipmentServiceDep,
+):
+    return await service.remove_tag(id, tag_name)
 
 
 ### Cancel a shipment by id
