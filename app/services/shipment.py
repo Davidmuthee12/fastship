@@ -2,19 +2,20 @@ from datetime import datetime, timedelta
 from uuid import UUID
 
 from fastapi import HTTPException, status
-from app.utils import decode_url_safe_token
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.schemas.shipment import ShipmentCreate, ShipmentReview, ShipmentUpdate
+from app.api.schemas.shipment import ShipmentCreate, ShipmentUpdate
 from app.database.models import (
     DeliveryPartner,
     Review,
     Seller,
     Shipment,
     ShipmentStatus,
+    TagName,
 )
 from app.database.redis import get_shipment_verification_code
 from app.services.shipment_event import ShipmentEventService
+from app.utils import decode_url_safe_token
 
 from .base import BaseService
 from .delivery_partner import DeliveryPartnerService
@@ -103,6 +104,25 @@ class ShipmentService(BaseService):
             await self.event_service.add(
                 shipment=shipment,
                 **update,
+            )
+
+        return await self._update(shipment)
+
+    async def add_tag(self, id: UUID, tag_name: TagName):
+        shipment = await self.get(id)
+        shipment.tags.append(await tag_name.tag(self.session))
+
+        return await self._update(shipment)
+
+    async def remove_tag(self, id: UUID, tag_name: TagName):
+        shipment = await self.get(id)
+
+        try:
+            shipment.tags.remove(await tag_name.tag(self.session))
+        except ValueError:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Tag doesnt exists on shipment",
             )
 
         return await self._update(shipment)
