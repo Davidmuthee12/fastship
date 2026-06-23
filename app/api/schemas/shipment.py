@@ -14,7 +14,7 @@ class BaseShipment(BaseModel):
         examples=[11001, 11002, 11003],
         deprecated=True,
     )
-    location: int
+    location: int | None = Field(default=None)
 
 
 class TagRead(BaseModel):
