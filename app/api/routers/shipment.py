@@ -4,6 +4,7 @@ from uuid import UUID
 from fastapi import APIRouter, Form, Request
 from fastapi.templating import Jinja2Templates
 
+from app.api.tag import APITag
 from app.config import app_settings
 from app.core.exceptions import NothingToUpdate
 from app.database.models import TagName
@@ -16,7 +17,7 @@ from ..schemas.shipment import (
     ShipmentUpdate,
 )
 
-router = APIRouter(prefix="/shipment", tags=["Shipment"])
+router = APIRouter(prefix="/shipment", tags=[APITag.SHIPMENT])
 
 
 templates = Jinja2Templates(TEMPLATE_DIR)
