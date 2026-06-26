@@ -14,10 +14,13 @@ async def test_submit_shipment_auth(client: AsyncClient):
 
 
 async def test_submit_shipment(client: AsyncClient, seller_token: str):
+    shipment = example.SHIPMENT.copy()
+    shipment.pop("destination")
+
     # Submit Shipment
     response = await client.post(
         base_url,
-        json=example.SHIPMENT,
+        json=shipment,
         headers={"Authorization": f"Bearer {seller_token}"},
     )
 
