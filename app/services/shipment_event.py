@@ -1,5 +1,4 @@
 from random import randint
-from fastapi import HTTPException, status as http_status
 from app.core.exceptions import EntityNotFound
 from app.database.models import Shipment, ShipmentEvent, ShipmentStatus
 from app.database.redis import add_shipment_verification_code
