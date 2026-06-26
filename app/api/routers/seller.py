@@ -10,8 +10,9 @@ from app.database.redis import add_jti_to_blacklist
 from app.utils import TEMPLATE_DIR
 from app.config import app_settings
 
-from ..dependencies import SellerServiceDep, get_seller_access_token
+from ..dependencies import SellerDep, SellerServiceDep, get_seller_access_token
 from ..schemas.seller import SellerCreate, SellerRead
+from ..schemas.shipment import ShipmentRead
 
 router = APIRouter(prefix="/seller", tags=[APITag.SELLER])
 
@@ -33,6 +34,18 @@ async def login_seller(
         "access_token": token,
         "type": "jwt",
     }
+
+
+### Get logged in seller profile
+@router.get("/me", response_model=SellerRead)
+async def get_seller_profile(seller: SellerDep):
+    return seller
+
+
+### Get logged in seller shipments
+@router.get("/shipments", response_model=list[ShipmentRead])
+async def get_shipments(seller: SellerDep):
+    return seller.shipments
 
 
 ### Verify Seller Email
