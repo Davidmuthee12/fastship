@@ -45,6 +45,20 @@ async def seller_token(client: AsyncClient):
     return response.json()["access_token"]
 
 
+@pytest_asyncio.fixture(scope="session")
+async def partner_token(client: AsyncClient):
+    response = await client.post(
+        "/partner/token",
+        data={
+            "grant_type": "password",
+            "username": example.DELIVERY_PARTNER["email"],
+            "password": example.DELIVERY_PARTNER["password"],
+        },
+    )
+    assert "access_token" in response.json()
+    return response.json()["access_token"]
+
+
 # Can also create a client with the default authorization header
 @pytest_asyncio.fixture(scope="session")
 async def client_with_auth(client: AsyncClient, seller_token: str):
