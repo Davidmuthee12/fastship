@@ -3,6 +3,7 @@ from time import perf_counter
 
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.routing import APIRoute
 from scalar_fastapi import get_scalar_api_reference
 
 from app.api.router import master_router
@@ -84,6 +85,11 @@ async def custom_middleware(request: Request, call_next):
     )
 
     return response
+
+
+@app.get("/")
+def root():
+    return {"Message": "Welcome to fastship api"}
 
 
 @app.get("/")
