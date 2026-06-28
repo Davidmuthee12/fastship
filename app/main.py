@@ -71,20 +71,20 @@ add_exception_handlers(app)
 
 
 # Add custom middleware
-@app.middleware("http")
-async def custom_middleware(request: Request, call_next):
-    start = perf_counter()
+# @app.middleware("http")
+# async def custom_middleware(request: Request, call_next):
+#     start = perf_counter()
 
-    response: Response = await call_next(request)
+#     response: Response = await call_next(request)
 
-    end = perf_counter()
-    time_taken = round(end - start, 2)
+#     end = perf_counter()
+#     time_taken = round(end - start, 2)
 
-    add_log.delay(
-        f"{request.method} {request.url} ({response.status_code}) {time_taken} s"
-    )
+#     add_log.delay(
+#         f"{request.method} {request.url} ({response.status_code}) {time_taken} s"
+#     )
 
-    return response
+#     return response
 
 
 @app.get("/")
