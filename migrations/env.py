@@ -17,7 +17,8 @@ config = context.config
 
 config.set_main_option(
     "sqlalchemy.url",
-    db_settings.POSTGRES_URL,
+    # db_settings.POSTGRES_URL,
+    "postgresql+asyncpg://postgres:47hpwg.postgres@localhost:5433/fastship",
 )
 
 # Interpret the config file for Python logging.
