@@ -9,8 +9,7 @@ from scalar_fastapi import get_scalar_api_reference
 from app.api.router import master_router
 from app.api.tag import APITag
 from app.core.exceptions import add_exception_handlers
-from app.worker.tasks import add_log
-
+from app.core.logging import logger
 
 description = """
 Delivery Management System for sellers and agents
@@ -71,20 +70,11 @@ add_exception_handlers(app)
 
 
 # Add custom middleware
-# @app.middleware("http")
-# async def custom_middleware(request: Request, call_next):
-#     start = perf_counter()
-
-#     response: Response = await call_next(request)
-
-#     end = perf_counter()
-#     time_taken = round(end - start, 2)
-
-#     add_log.delay(
-#         f"{request.method} {request.url} ({response.status_code}) {time_taken} s"
-#     )
-
-#     return response
+@app.middleware("http")
+async def log_request(request: Request, call_next):
+    response: Response = await call_next(request)
+    logger.info("%s %s (%d)", request.method, request.url.path, response.status_code)
+    return response
 
 
 @app.get("/")

@@ -76,7 +76,7 @@ def get_pagination_params(
 async def get_shipments(
     partner: DeliveryPartnerDep,
     session: SessionDep,
-    pagination: Annotated[PaginationParams.Depends(get_pagination_params)],
+    pagination: Annotated[PaginationParams, Depends(get_pagination_params)],
 ):
     result = await session.scalars(
         select(Shipment)
