@@ -1,13 +1,13 @@
 import logging
-
+from config import telemetry_settings
 import logtail
 
 logger = logging.getLogger("fastship")
 logger.setLevel(logging.INFO)
 
 logtail_handler = logtail.LogtailHandler(
-    source_token="QjG4DPM9gr4h2YoGoMz4p2F5",
-    host="s2554177.eu-fsn-3.betterstackdata.com",
+    source_token=telemetry_settings.TELEMETRY_SOURCE_TOKEN,
+    host=telemetry_settings.TELEMETRY_HOST,
 )
 
 logtail_handler.setFormatter(

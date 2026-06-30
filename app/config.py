@@ -58,7 +58,13 @@ class NotificationSettings(BaseSettings):
     model_config = _base_config
 
 
+class TelemetryLoggerSettings(BaseSettings):
+    TELEMETRY_SOURCE_TOKEN: str
+    TELEMETRY_HOST: str
+
+
 app_settings = AppSettings()
 db_settings = DatabaseSettings()
 security_settings = SecuritySettings()
 notification_settings = NotificationSettings()
+telemetry_settings = TelemetryLoggerSettings()
